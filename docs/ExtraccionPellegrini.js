@@ -3,6 +3,7 @@
   const results = [];
 
   const importe = 1000;
+
   const fechaSuscripcion = document.querySelector("#fecha_suscripcion").value.trim();
   const fechaRescate = document.querySelector("#fecha_rescate").value.trim();
 
@@ -10,6 +11,8 @@
     alert("Por favor completá las fechas de Suscripción y Rescate antes de ejecutar la función.");
     return;
   }
+
+  document.querySelector("#importe").value = importe;
 
   const gruposFondos = {
     "CONSERVADORES": [

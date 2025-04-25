@@ -2,6 +2,25 @@
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
   const results = [];
 
+  // --- Función para corregir errores de codificación en los textos ---
+  const fixEncoding = str => {
+    try {
+      const bytes = new Uint8Array([...str].map(c => c.charCodeAt(0)));
+      return new TextDecoder("utf-8").decode(bytes);
+    } catch (e) {
+      // Reemplazos manuales para casos comunes si falla
+      return str
+        .replace("Ã“", "Ó")
+        .replace("Ã¡", "á")
+        .replace("Ã©", "é")
+        .replace("Ã­", "í")
+        .replace("Ã³", "ó")
+        .replace("Ãº", "ú")
+        .replace("Ã‘", "Ñ")
+        .replace("Ã±", "ñ");
+    }
+  };
+
   // Valores fijos
   const importe = 1000;
   const fechaSuscripcion = "21/03/2025";
@@ -15,7 +34,8 @@
   const options = Array.from(select.options).filter(o => o.value !== "");
 
   for (let i = 0; i < options.length; i++) {
-    const optionText = options[i].text;
+    const rawText = options[i].text;
+    const optionText = fixEncoding(rawText);
     console.log(`Procesando opción ${i + 1} de ${options.length}: ${optionText}`);
 
     select.selectedIndex = i + 1;

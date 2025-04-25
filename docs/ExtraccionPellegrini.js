@@ -2,24 +2,26 @@
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
   const results = [];
 
-  // --- Función para corregir errores de codificación en los textos ---
-  const fixEncoding = str => {
-    try {
-      const bytes = new Uint8Array([...str].map(c => c.charCodeAt(0)));
-      return new TextDecoder("utf-8").decode(bytes);
-    } catch (e) {
-      // Reemplazos manuales para casos comunes si falla
-      return str
-        .replace("Ã“", "Ó")
-        .replace("Ã¡", "á")
-        .replace("Ã©", "é")
-        .replace("Ã­", "í")
-        .replace("Ã³", "ó")
-        .replace("Ãº", "ú")
-        .replace("Ã‘", "Ñ")
-        .replace("Ã±", "ñ");
-    }
-  };
+  // Función para corregir errores comunes de codificación
+  const fixEncoding = str => str
+    .replace(/Ã“/g, "Ó")
+    .replace(/Ãº/g, "ú")
+    .replace(/Ã¡/g, "á")
+    .replace(/Ã©/g, "é")
+    .replace(/Ã­/g, "í")
+    .replace(/Ã³/g, "ó")
+    .replace(/Ã±/g, "ñ")
+    .replace(/Ã‰/g, "É")
+    .replace(/Ã/g, "í") // genérico, cuidado
+    .replace(/â€“/g, "–")
+    .replace(/â€œ/g, "“")
+    .replace(/â€/g, "”")
+    .replace(/â€˜/g, "‘")
+    .replace(/â€™/g, "’")
+    .replace(/â€¢/g, "•")
+    .replace(/â€¦/g, "…")
+    .replace(/â€/g, "")
+    .replace(/ï¿½/g, "ó"); // el caso que encontraste vos
 
   // Valores fijos
   const importe = 1000;

@@ -27,7 +27,7 @@
     let attempts = 0;
     let saldo = "";
     while (saldo === "" && attempts < 30) {
-      await delay(300);
+      await delay(100);
       saldo = document.querySelector("#saldo").value;
       attempts++;
     }

@@ -2,17 +2,15 @@
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
   const results = [];
 
-  // Verificar que los campos de fecha estén completos
+  const importe = 1000;
   const fechaSuscripcion = document.querySelector("#fecha_suscripcion").value.trim();
   const fechaRescate = document.querySelector("#fecha_rescate").value.trim();
-  const importe = 1000;
 
   if (!fechaSuscripcion || !fechaRescate) {
-    alert("Por favor completá las fechas de suscripción y rescate antes de ejecutar el script.");
+    alert("Por favor completá las fechas de Suscripción y Rescate antes de ejecutar la función.");
     return;
   }
 
-  // Lista y orden de los fondos a extraer
   const gruposFondos = {
     "CONSERVADORES": [
       "RENTA / Unica", "RENTA PESOS / Clase A", "RENTA FIJA / Clase A",
@@ -60,12 +58,11 @@
     results.push([optionText, resultValue]);
   }
 
-  // Agrupar resultados según orden original
   const resultadosAgrupados = [];
   for (const [grupo, fondos] of Object.entries(gruposFondos)) {
     const grupoResultados = fondos
       .map(nombre => results.find(([n]) => n === nombre))
-      .filter(Boolean); // eliminar los no encontrados
+      .filter(Boolean);
     if (grupoResultados.length > 0) {
       resultadosAgrupados.push([[], [`${grupo}`]]);
       resultadosAgrupados.push(...grupoResultados);

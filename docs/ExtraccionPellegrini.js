@@ -20,7 +20,7 @@
 
     select.selectedIndex = i + 1;
     select.dispatchEvent(new Event("change"));
-    await delay(200);
+    await delay(50);
 
     senDataSimulation();
 

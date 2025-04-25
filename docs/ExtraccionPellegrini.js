@@ -47,7 +47,7 @@
 
   const contenido = encabezado
     .concat(results)
-    .map(e => e.map(v => `"${v}"`).join(";"))
+    .map(e => e.map(v => `"${v}"`).join(","))
     .join("\n");
 
   const csvContent = "data:text/csv;charset=utf-8," + contenido;

@@ -2,39 +2,87 @@
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
   const results = [];
 
-  // Valores fijos
   const importe = 1000;
-  const fechaSuscripcion = "21/03/2025";
-  const fechaRescate = "21/04/2025";
+  const fechaSuscripcion = document.querySelector("#fecha_suscripcion").value.trim();
+  const fechaRescate = document.querySelector("#fecha_rescate").value.trim();
+
+  if (!fechaSuscripcion || !fechaRescate) {
+    alert("Por favor completá las fechas de Suscripción y Rescate antes de ejecutar la función.");
+    return;
+  }
 
   document.querySelector("#importe").value = importe;
-  document.querySelector("#fecha_suscripcion").value = fechaSuscripcion;
-  document.querySelector("#fecha_rescate").value = fechaRescate;
+
+  const gruposFondos = {
+    "CONSERVADORES": [
+      "RENTA / Unica", "RENTA PESOS / Clase A", "RENTA FIJA / Clase A",
+      "RENTA FIJA II / Clase A", "RENTA FIJA III / Clase A", "Money Market USD / Clase A"
+    ],
+    "BONOS": [
+      "RENTA FIJA AHORRO / Clase A", "RENTA FIJA PLUS / Clase A",
+      "RENTA FIJA PÚBLICA / Clase A", "RENTA DÓLARES / Clase A",
+      "RENTA PÚBLICA FEDERAL / Clase A"
+    ],
+    "ESPECIFICOS": [
+      "Pymes / Clase A", "Pymes / Unica", "Agro / Clase A", "DESARROLLO ARGENTINO / Clase A",
+      "CRECIMIENTO / Clase A", "PROTECCIÓN / Clase A", "RETORNO TOTAL / Clase A"
+    ],
+    "ACCIONES": ["ACCIONES / Clase A"],
+    "MIXTOS": ["INTEGRAL / Clase A"],
+    "OTROS": ["RENTA FIJA PÚBLICA / Unica", "Fondo cerrado inmobiliario / Unica"]
+  };
+
+  const fondosPermitidos = Object.values(gruposFondos).flat();
 
   const select = document.querySelector("#tipo_fondo");
   const options = Array.from(select.options).filter(o => o.value !== "");
 
   for (let i = 0; i < options.length; i++) {
-    const optionText = options[i].text;
-    console.log(`Procesando opción ${i + 1} de ${options.length}: ${optionText}`);
+    const optionText = options[i].text.trim();
+    if (!fondosPermitidos.includes(optionText)) continue;
 
+    console.log(`Procesando: ${optionText}`);
     select.selectedIndex = i + 1;
     select.dispatchEvent(new Event("change"));
-    await delay(500);
+    await delay(50);
 
     senDataSimulation();
 
     let attempts = 0;
     let saldo = "";
     while (saldo === "" && attempts < 30) {
-      await delay(300);
+      await delay(100);
       saldo = document.querySelector("#saldo").value;
       attempts++;
     }
 
     const resultValue = saldo || "N/A";
-    console.log(`Resultado obtenido: ${resultValue}`);
     results.push([optionText, resultValue]);
+  }
+
+  // Calcular ponderaciones por valor descendente
+  const numericResults = results
+    .map(([nombre, valor]) => [nombre, parseFloat(valor.replace(/[^\d.]/g, ""))])
+    .filter(([, valor]) => !isNaN(valor))
+    .sort((a, b) => b[1] - a[1])
+    .map(([nombre], idx) => [nombre, idx + 1]);
+
+  const ponderaciones = Object.fromEntries(numericResults);
+
+  const resultadosAgrupados = [];
+  for (const [grupo, fondos] of Object.entries(gruposFondos)) {
+    const grupoResultados = fondos
+      .map(nombre => {
+        const encontrado = results.find(([n]) => n === nombre);
+        if (!encontrado) return null;
+        const ponderacion = ponderaciones[nombre] || "";
+        return [nombre, encontrado[1], ponderacion];
+      })
+      .filter(Boolean);
+    if (grupoResultados.length > 0) {
+      resultadosAgrupados.push([[], [`${grupo}`]]);
+      resultadosAgrupados.push(...grupoResultados);
+    }
   }
 
   const encabezado = [
@@ -42,12 +90,12 @@
     ["Fecha Suscripción", fechaSuscripcion],
     ["Fecha Rescate", fechaRescate],
     [],
-    ["Fondo", "Resultado"]
+    ["Fondo", "Resultado", "Ponderación"]
   ];
 
   const contenido = encabezado
-    .concat(results)
-    .map(e => e.map(v => `"${v}"`).join(","))
+    .concat(resultadosAgrupados)
+    .map(e => e.map(v => `"${v}"`).join(";"))
     .join("\n");
 
   const csvContent = "data:text/csv;charset=utf-8," + contenido;

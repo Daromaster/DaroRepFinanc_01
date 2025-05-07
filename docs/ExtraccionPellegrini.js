@@ -3,7 +3,6 @@
   const results = [];
 
   const importe = 1000;
-
   const fechaSuscripcion = document.querySelector("#fecha_suscripcion").value.trim();
   const fechaRescate = document.querySelector("#fecha_rescate").value.trim();
 
@@ -61,10 +60,24 @@
     results.push([optionText, resultValue]);
   }
 
+  // Calcular ponderaciones por valor descendente
+  const numericResults = results
+    .map(([nombre, valor]) => [nombre, parseFloat(valor.replace(/[^\d.]/g, ""))])
+    .filter(([, valor]) => !isNaN(valor))
+    .sort((a, b) => b[1] - a[1])
+    .map(([nombre], idx) => [nombre, idx + 1]);
+
+  const ponderaciones = Object.fromEntries(numericResults);
+
   const resultadosAgrupados = [];
   for (const [grupo, fondos] of Object.entries(gruposFondos)) {
     const grupoResultados = fondos
-      .map(nombre => results.find(([n]) => n === nombre))
+      .map(nombre => {
+        const encontrado = results.find(([n]) => n === nombre);
+        if (!encontrado) return null;
+        const ponderacion = ponderaciones[nombre] || "";
+        return [nombre, encontrado[1], ponderacion];
+      })
       .filter(Boolean);
     if (grupoResultados.length > 0) {
       resultadosAgrupados.push([[], [`${grupo}`]]);
@@ -77,7 +90,7 @@
     ["Fecha Suscripción", fechaSuscripcion],
     ["Fecha Rescate", fechaRescate],
     [],
-    ["Fondo", "Resultado"]
+    ["Fondo", "Resultado", "Ponderación"]
   ];
 
   const contenido = encabezado
